@@ -194,7 +194,7 @@ button{ font-family:inherit; cursor:pointer; }
   opacity:0;
   /* transform:translateY(-8px) scale(.97); */
   transform: translateY(8px);
-  transition:opacity .15s ease, transform .5s cubic-bezier(.4,0,.2,1); 
+  transition:opacity .4s ease, transform .5s cubic-bezier(.4,0,.2,1); 
   pointer-events:none;
   z-index:0;
 }
