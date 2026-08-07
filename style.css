@@ -1,0 +1,619 @@
+/* =========================================================
+   FLASHCARD — style.css
+   ========================================================= */
+
+:root{
+  --bg-0:#0a1210;
+  --bg-glow: radial-gradient(ellipse 900px 420px at 50% -8%, rgba(120,100,50,0.18), transparent 65%);
+
+  --card-top:#f8f1de;
+  --card-bottom:#efe2c3;
+  --ink:#22322b;
+  --ink-soft:#3c4b43;
+
+  --accent:#5fae95;
+  --accent-soft:rgba(95,174,149,0.18);
+  --accent-amber-soft: rgba(217, 165, 74, 0.18);
+  --muted:#7c8d87;
+  --muted-dim:#54615c;
+
+  --btn-bg:rgba(255,255,255,0.03);
+  --btn-bg-hover:rgba(255,255,255,0.07);
+  --btn-border:rgba(255,255,255,0.09);
+
+  --solid:#e2a545;
+  --solid-hover:#eab660;
+
+  --petal:#b3a1de;
+
+  --font-serif:'Fraunces', Georgia, 'Iowan Old Style', serif;
+  --font-mono:'JetBrains Mono', ui-monospace, monospace;
+
+  --card-w: min(520px, 86vw);
+  --card-h: clamp(220px, 34vw, 320px);
+  --radius-card: 22px;
+}
+
+*{ box-sizing:border-box; }
+
+html,body{
+  height:100%;
+  margin:0;
+}
+
+body{
+  min-height:100dvh;
+  background:
+    radial-gradient(
+      ellipse 60% 40% at 50% 8%,
+      var(--accent-amber-soft),
+      transparent 60%
+    ),
+    linear-gradient(180deg, #0a151c 0%, #0d1a22 45%, #0a1319 100%);
+  color:var(--ink);
+  font-family:var(--font-mono);
+  overflow-x:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  -webkit-tap-highlight-color:transparent;
+
+  /* teks & tombol tidak bisa diblok/diseleksi */
+  user-select:none;
+  -webkit-user-select:none;
+  -ms-user-select:none;
+  -webkit-touch-callout:none;
+}
+
+/* pengecualian: textarea edit tetap bisa diseleksi & disalin normal */
+.modal-textarea{
+  user-select:text;
+  -webkit-user-select:text;
+  -ms-user-select:text;
+  -webkit-touch-callout:default;
+}
+
+button{ font-family:inherit; cursor:pointer; }
+
+/* =========================================================
+   Ambient layers
+   ========================================================= */
+
+.rain-layer,
+.splash-layer{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  overflow:hidden;
+  z-index:1;
+}
+
+/* splash harus tetap tampil di atas overlay edit (z-index overlay: 50) */
+.splash-layer{
+  z-index:999;
+}
+
+.rain-drop{
+  position:absolute;
+  top:-40px;
+  border-radius:50%;
+  background-repeat:no-repeat, no-repeat;
+  background-position:center, center;
+  background-size:contain, contain;
+  opacity:.85;
+  will-change:transform;
+}
+
+.splash{
+  position:absolute;
+  border-radius:50%;
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:contain;
+  will-change:transform, opacity;
+}
+
+/* =========================================================
+   Stage / layout
+   ========================================================= */
+
+.stage{
+  position:relative;
+  z-index:2;
+  width:min(640px, 92vw);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:clamp(20px, 3vw, 34px);
+  padding: clamp(16px, 4vw, 40px) 0;
+}
+
+.topbar{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-size:13px;
+  letter-spacing:.12em;
+}
+
+.edit-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:none;
+  border:none;
+  color:var(--accent);
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  font-size:13px;
+  padding:4px 2px;
+  transition:opacity .2s ease;
+}
+.edit-btn:hover{ opacity:.8; }
+.edit-btn .icon{ width:15px; height:15px; }
+
+.counter{
+  color:var(--muted);
+  letter-spacing:.14em;
+  font-size:13px;
+}
+
+/* =========================================================
+   Card
+   ========================================================= */
+
+.card-wrap{
+  position:relative;
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.side-nav{
+  display:none;
+}
+
+.card{
+  position:relative;
+  width:100%;
+  height:var(--card-h);
+  perspective:1600px;
+}
+
+.card-back-shadow{
+  position:absolute;
+  left:0%;
+  right:0%;
+  top:-5px;
+  bottom:0px;
+  border-radius:var(--radius-card);
+  background:linear-gradient(160deg, var(--accent), #3c8064);
+  opacity:0;
+  transform:translateY(-8px) scale(.97);
+  /* transition:opacity .4s ease, transform .5s cubic-bezier(.4,0,.2,1); */
+  pointer-events:none;
+  z-index:0;
+}
+.card-back-shadow.is-visible{
+  opacity:.9;
+  transform:translateY(0) scale(1);
+}
+
+.card-flip{
+  position:relative;
+  z-index:1;
+  width:100%;
+  height:100%;
+  transform-style:preserve-3d;
+  transform-origin:50% 50%;
+  transition:transform .68s cubic-bezier(.5,.05,.15,1);
+  cursor:pointer;
+}
+
+.card-flip.is-flipped{
+  transform:rotateY(-180deg);
+}
+
+.card-flip.is-switching{
+  animation:cardSwitch .32s ease;
+}
+
+@keyframes cardSwitch{
+  0%{ opacity:1; }
+  45%{ opacity:0; transform:translateX(-14px) rotateY(var(--y,0deg)); }
+  55%{ opacity:0; transform:translateX(14px) rotateY(var(--y,0deg)); }
+  100%{ opacity:1; }
+}
+
+.card-face{
+  position:absolute;
+  inset:0;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  border-radius:var(--radius-card);
+  background:linear-gradient(160deg, var(--card-top), var(--card-bottom));
+  box-shadow:
+    0 30px 60px -20px rgba(0,0,0,.55),
+    0 2px 0 rgba(255,255,255,.4) inset;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  padding:24px;
+  text-align:center;
+  overflow-y:auto;
+  scrollbar-width:none;
+}
+.card-face::-webkit-scrollbar{ display:none; }
+
+.card-face--back{
+  transform:rotateY(180deg);
+  background:var(--card-top);
+}
+
+.card-face--back::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:120px;
+  /* background:linear-gradient(to bottom, rgba(95,174,149,.35), transparent); */
+  pointer-events:none;
+}
+
+.card-face--back::after{
+  content:"";
+  position:absolute;
+  top:0;
+  left:14%;
+  right:14%;
+  height:3px;
+  border-radius:0 0 4px 4px;
+  /*background:var(--accent);*/
+  box-shadow:0 0 12px rgba(95,174,149,.6);
+  pointer-events:none;
+}
+
+.card-face--back .word,
+.card-face--back .eyebrow{
+  position:relative;
+  z-index:1;
+  transition:opacity .18s ease;
+}
+
+.card-face--back .word{
+  color:#35544a;
+}
+
+.card-face--back.is-hidden .word,
+.card-face--back.is-hidden .eyebrow{
+  opacity:0;
+}
+
+.eyebrow{
+  font-family:var(--font-mono);
+  font-size:12px;
+  letter-spacing:.32em;
+  color:var(--accent);
+  text-transform:uppercase;
+}
+
+.word{
+  font-family:var(--font-serif);
+  font-weight:700;
+  color:var(--ink);
+  font-size:clamp(28px, 5.2vw, 46px);
+  line-height:1.2;
+  max-width:92%;
+  word-break:break-word;
+  overflow-wrap:break-word;
+  hyphens:auto;
+}
+
+/* teks panjang otomatis mengecil supaya tetap muat di dalam kartu */
+.word.is-long{
+  font-size:clamp(20px, 4vw, 32px);
+}
+.word.is-very-long{
+  font-size:clamp(16px, 3.1vw, 24px);
+}
+
+/* =========================================================
+   Bottom controls (desktop + portrait mobile)
+   ========================================================= */
+
+.controls{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  width:100%;
+}
+
+.pill{
+  flex:1 1 0;
+  max-width:190px;
+  padding:14px 18px;
+  border-radius:999px;
+  border:1px solid var(--btn-border);
+  background:var(--btn-bg);
+  color:#e8ece9;
+  font-family:var(--font-mono);
+  font-size:14px;
+  letter-spacing:.02em;
+  transition:background .2s ease, border-color .2s ease, transform .15s ease;
+}
+.pill:hover{ background:var(--btn-bg-hover); transform:translateY(-1px); }
+.pill:active{ transform:translateY(0); }
+
+.pill--accent{
+  color:var(--accent);
+  border-color:rgba(95,174,149,0.35);
+}
+.pill--accent.is-on{
+  background:var(--accent-soft);
+  border-color:var(--accent);
+}
+
+.pill--ghost{ color:var(--muted); }
+
+.pill--solid{
+  background:var(--solid);
+  border-color:var(--solid);
+  color:#241505;
+  font-weight:600;
+}
+.pill--solid:hover{ background:var(--solid-hover); border-color:var(--solid-hover); }
+
+/* side controls hidden unless mobile landscape */
+.side-controls{ display:none; }
+
+/* =========================================================
+   Edit overlay
+   ========================================================= */
+
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:50;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(5,10,9,.6);
+  backdrop-filter:blur(6px);
+  padding:20px;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .3s ease, visibility 0s linear .3s;
+}
+.overlay.is-open{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transition:opacity .3s ease, visibility 0s linear 0s;
+}
+
+.modal{
+  width:min(680px, 100%);
+  max-height:92vh;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  background:#141f1c;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:18px;
+  padding:clamp(20px, 4vw, 34px);
+  box-shadow:0 40px 80px -20px rgba(0,0,0,.6);
+  transform:translateY(18px) scale(.96);
+  opacity:0;
+  transition:transform .32s cubic-bezier(.16,.84,.44,1), opacity .28s ease;
+}
+.overlay.is-open .modal{
+  transform:translateY(0) scale(1);
+  opacity:1;
+}
+
+.modal-title{
+  margin:0 0 10px;
+  color:var(--accent);
+  font-family:var(--font-serif);
+  font-size:24px;
+}
+
+.modal-desc{
+  margin:0 0 16px;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.6;
+}
+
+.modal-textarea{
+  width:100%;
+  flex:1 1 auto;
+  min-height:220px;
+  max-height:50vh;
+  resize:none;
+  overflow-y:auto;
+  background:#0d1513;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;
+  color:#dfe6e2;
+  font-family:var(--font-mono);
+  font-size:14px;
+  line-height:1.7;
+  padding:14px;
+
+  /* scrollbar menyatu dengan tema */
+  scrollbar-width:thin;
+  scrollbar-color:rgba(95,174,149,.45) transparent;
+}
+.modal-textarea:focus{
+  outline:none;
+  border-color:var(--accent);
+}
+.modal-textarea::-webkit-scrollbar{
+  width:8px;
+}
+.modal-textarea::-webkit-scrollbar-track{
+  background:transparent;
+}
+.modal-textarea::-webkit-scrollbar-thumb{
+  background:rgba(95,174,149,.4);
+  border-radius:999px;
+  border:2px solid #0d1513;
+}
+.modal-textarea::-webkit-scrollbar-thumb:hover{
+  background:rgba(95,174,149,.65);
+}
+
+.modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:12px;
+  margin-top:18px;
+}
+.modal-actions .pill{ flex:none; max-width:none; padding:11px 22px; }
+
+/* =========================================================
+   Toast
+   ========================================================= */
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:28px;
+  transform:translate(-50%, 20px);
+  background:#141f1c;
+  border:1px solid rgba(255,255,255,.09);
+  color:#dfe6e2;
+  padding:12px 20px;
+  border-radius:999px;
+  font-size:13px;
+  letter-spacing:.02em;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease, transform .25s ease;
+  z-index:80;
+}
+.toast.is-visible{
+  opacity:1;
+  transform:translate(-50%, 0);
+}
+
+/* =========================================================
+   Responsive — tablet / small desktop
+   ========================================================= */
+
+@media (max-width: 720px){
+  :root{
+    --card-h: clamp(200px, 46vw, 300px);
+  }
+  .pill{ font-size:13px; padding:12px 14px; }
+}
+
+/* =========================================================
+   Mobile portrait (image 5) — stacked, same structure, smaller
+   ========================================================= */
+
+@media (max-width: 560px) and (orientation:portrait){
+  :root{
+    --card-h: 46vh;
+  }
+  .stage{
+    justify-content:center;
+    min-height:100dvh;
+  }
+  .word{ font-size:clamp(32px, 11vw, 46px); }
+  .controls{ gap:10px; }
+  .pill{ padding:14px 10px; font-size:12.5px; }
+}
+
+/* =========================================================
+   Mobile landscape (image 6) — icon-only controls on the right
+   Targets touch devices only, so desktop landscape windows
+   keep the normal layout.
+   ========================================================= */
+
+@media (hover:none) and (pointer:coarse) and (orientation:landscape) and (max-height:640px){
+
+  body{ align-items:flex-start; }
+
+  .stage{
+    width:100%;
+    min-height:100dvh;
+    padding:14px 96px 14px 18px;
+    gap:14px;
+    justify-content:center;
+  }
+
+  .topbar{
+    font-size:11px;
+  }
+  .edit-btn span{ letter-spacing:.1em; }
+
+  .controls{ display:none; }
+
+  .card-wrap{ align-items:center; }
+
+  :root{
+    --card-h: min(78vh, 340px);
+  }
+  .card{ width:100%; }
+  .word{ font-size:clamp(28px, 7vw, 42px); }
+
+  .side-controls{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+    position:fixed;
+    right:14px;
+    top:50%;
+    transform:translateY(-50%);
+    z-index:5;
+  }
+
+  .side-circle{
+    width:52px;
+    height:52px;
+    border-radius:50%;
+    background:var(--btn-bg);
+    border:1px solid var(--btn-border);
+    color:#dfe6e2;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:background .2s ease, border-color .2s ease;
+  }
+  .side-circle svg{ width:20px; height:20px; }
+  .side-circle:active{ background:var(--btn-bg-hover); }
+
+  .side-circle--accent{
+    border-color:rgba(95,174,149,0.5);
+    color:var(--accent);
+    position:relative;
+  }
+  .side-circle--accent .icon-repeat{ display:none; }
+  .side-circle--accent.is-shuffled .icon-shuffle{ display:none; }
+  .side-circle--accent.is-shuffled .icon-repeat{ display:block; }
+}
+
+/* =========================================================
+   Reduced motion
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce){
+  .card-flip,
+  .modal,
+  .pill{
+    animation-duration:.01ms !important;
+    transition-duration:.01ms !important;
+  }
+}
