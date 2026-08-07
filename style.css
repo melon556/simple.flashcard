@@ -194,7 +194,7 @@ button{ font-family:inherit; cursor:pointer; }
   opacity:0;
   /* transform:translateY(-8px) scale(.97); */
   transform: translateY(8px);
-  transition:opacity .15s ease, transform .5s cubic-bezier(.4,0,.2,1); 
+  transition:opacity 0.15s ease, transform .5s cubic-bezier(.4,0,.2,1); 
   pointer-events:none;
   z-index:0;
 }
@@ -564,7 +564,7 @@ button{ font-family:inherit; cursor:pointer; }
   .card-wrap{ align-items:center; }
 
   :root{
-    --card-h: min(78vh, 340px);
+    --card-h: min(55vh);
   }
   .card{ width:100%; }
   .word{ font-size:clamp(28px, 7vw, 42px); }
