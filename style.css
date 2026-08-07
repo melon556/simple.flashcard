@@ -548,7 +548,7 @@ button{ font-family:inherit; cursor:pointer; }
 
   .stage{
     width:100%;
-    min-height:100dvh;
+    min-height:70dvh;
     padding:14px 96px 14px 18px;
     gap:14px;
     justify-content:center;
