@@ -190,7 +190,7 @@ button{ font-family:inherit; cursor:pointer; }
   top:-5px;
   bottom:20px;
   border-radius:var(--radius-card);
-  background:linear-gradient(160deg, var(--accent), #3c8064);
+  /* background:linear-gradient(160deg, var(--accent), #3c8064); */
   opacity:0;
   /* transform:translateY(-8px) scale(.97); */
   transform: translateY(8px);
@@ -289,7 +289,7 @@ button{ font-family:inherit; cursor:pointer; }
 }
 
 .card-face--back .word{
-  color:#35544a;
+  color:#4c7e6e;
 }
 
 .card-face--back.is-hidden .word,
